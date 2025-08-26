@@ -2,6 +2,8 @@
 
 A Next.js starter kit demonstrating the integration of [Namespace Offchain Manager SDK](https://docs.namespace.ninja/developer-guide/sdks/offchain-manager) with [RainbowKit](https://rainbowkit.com) for creating and managing Offchain ENS subnames.
 
+**🔗 Repository:** [https://github.com/thenamespace/offchain-next-rainbowkit-template](https://github.com/thenamespace/offchain-next-rainbowkit-template)
+
 ## Prerequisites
 
 - Node.js (v18 or later)
@@ -13,8 +15,8 @@ A Next.js starter kit demonstrating the integration of [Namespace Offchain Manag
 ### 1. Clone and Install
 
 ```bash
-git clone <repository-url>
-cd rainbow-starter-kit
+git clone https://github.com/thenamespace/offchain-next-rainbowkit-template.git
+cd offchain-next-rainbowkit-template
 npm install
 ```
 
@@ -90,27 +92,6 @@ A comprehensive account management interface that:
 - Validates subname availability in real-time
 - Supports custom avatars and display names
 
-## Usage Example
-
-```tsx
-import { CustomConnectButton } from "@/components/kit/CustomConnectButton";
-import { usePreferredIdentity } from "@/hooks/use-subnames";
-
-export default function MyComponent() {
-  const { name, avatarSrc, hasSubnames } = usePreferredIdentity({
-    address: "0x123...",
-    fallbackName: "John Doe"
-  });
-
-  return (
-    <div>
-      <CustomConnectButton />
-      <p>Display name: {name}</p>
-    </div>
-  );
-}
-```
-
 ## Security & Limitations
 
 ### ⚠️ Important Security Notes
@@ -146,6 +127,7 @@ src/
 
 ## References
 
+- **GitHub Repository**: [https://github.com/thenamespace/offchain-next-rainbowkit-template](https://github.com/thenamespace/offchain-next-rainbowkit-template)
 - **Documentation**: [https://docs.namespace.ninja/](https://docs.namespace.ninja/)
 - **SDK Reference**: [Offchain Manager SDK](https://docs.namespace.ninja/developer-guide/sdks/offchain-manager)
 - **Builders Group**: [https://t.me/+5FAwyiKOTeswNTIy](https://t.me/+5FAwyiKOTeswNTIy)
