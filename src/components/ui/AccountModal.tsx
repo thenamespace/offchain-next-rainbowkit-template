@@ -4,11 +4,12 @@ import * as React from "react"
 import { useMediaQuery } from "@/hooks/use-media-query"
 import { useDisconnect } from "wagmi"
 import { Dialog, DialogContent, DialogTitle } from "./dialog"
-import { Drawer, DrawerContent, DrawerTitle } from "./drawer"
+import { Drawer, DrawerContent, DrawerTitle, DrawerClose } from "./drawer"
 import { Button } from "./button"
 import { Avatar, AvatarFallback, AvatarImage } from "./avatar"
-import { Copy, LogOut } from "lucide-react"
+import { Copy, LogOut, XIcon } from "lucide-react"
 import { emojiAvatarForAddress } from "@/utils/avatar"
+import { usePreferredIdentity } from "@/hooks/use-subnames"
 
 interface AccountModalProps {
   open: boolean
@@ -27,6 +28,12 @@ interface AccountModalProps {
 export function AccountModal({ open, onOpenChange, account, onDisconnect }: AccountModalProps) {
   const [copied, setCopied] = React.useState(false)
   const isDesktop = useMediaQuery("(min-width: 768px)")
+  
+  const { name, avatarSrc } = usePreferredIdentity({
+    address: account?.address,
+    fallbackName: account?.displayName,
+    fallbackAvatar: account?.ensAvatar,
+  })
 
   const copyAddress = async () => {
     if (account?.address) {
@@ -43,14 +50,22 @@ export function AccountModal({ open, onOpenChange, account, onDisconnect }: Acco
     onOpenChange(false)
   }
 
-  const ModalContent = () => (
-    <>
+  const ModalContent = ({ showCloseButton = false }) => (
+    <div className="bg-gray-50 rounded-2xl p-6 relative">
+      {showCloseButton && (
+        <DrawerClose asChild>
+          <button className="absolute top-4 right-4 p-1 rounded-full hover:bg-gray-200 transition-colors">
+            <XIcon className="w-5 h-5 text-gray-500" />
+          </button>
+        </DrawerClose>
+      )}
+      
       {/* Account Info */}
       <div className="text-center mb-6">
-        <Avatar className="w-20 h-20 mx-auto mb-4">
-          <AvatarImage src={account?.ensAvatar} alt={account?.displayName} />
+        <Avatar className="w-20 h-20 mx-auto my-3">
+          <AvatarImage src={avatarSrc} alt={name} />
           <AvatarFallback 
-            className="text-3xl flex items-center justify-center"
+            className="text-2xl flex items-center justify-center"
             style={{
               backgroundColor: account?.address ? emojiAvatarForAddress(account.address).color : undefined
             }}
@@ -59,48 +74,46 @@ export function AccountModal({ open, onOpenChange, account, onDisconnect }: Acco
           </AvatarFallback>
         </Avatar>
         
-        <h3 className="text-xl font-semibold text-foreground mb-2">
-          {account?.displayName || `${account?.address?.slice(0, 6)}...${account?.address?.slice(-4)}`}
+        <h3 className="text-2xl font-bold text-gray-900 ">
+          {name}
         </h3>
         
         {(account?.displayBalance || account?.balanceFormatted) && (
-          <p className="text-base text-muted-foreground">
+          <p className="text-sm text-gray-600 ">
             {account.displayBalance || `${account.balanceFormatted} ${account.balanceSymbol || ''}`}
           </p>
         )}
       </div>
 
       {/* Actions */}
-      <div className="flex gap-3">
+      <div className="flex gap-3 justify-center">
         <Button
           onClick={copyAddress}
-          variant="outline"
-          className="flex-1 h-12 rounded-xl border border-border hover:bg-accent transition-all duration-200 flex items-center justify-center gap-2"
+          className="w-1/2 h-14 bg-white hover:bg-gray-50 text-gray-900 border border-gray-200 rounded-xl font-medium transition-all duration-200 flex flex-col items-center justify-center gap-1"
         >
           <Copy className="w-4 h-4" />
-          <span className="text-base font-medium">
+          <span className="text-sm">
             {copied ? 'Copied!' : 'Copy Address'}
           </span>
         </Button>
         
         <Button
           onClick={handleDisconnect}
-          variant="outline"
-          className="flex-1 h-12 rounded-xl border border-border hover:bg-destructive/10 hover:border-destructive/20 transition-all duration-200 flex items-center justify-center gap-2"
+          className="w-1/2 h-14 bg-white hover:bg-gray-50 text-gray-900 border border-gray-200 rounded-xl font-medium transition-all duration-200 flex flex-col items-center justify-center gap-1"
         >
           <LogOut className="w-4 h-4" />
-          <span className="text-base font-medium">Disconnect</span>
+          <span className="text-sm">Disconnect</span>
         </Button>
       </div>
-    </>
+    </div>
   )
 
   if (isDesktop) {
     return (
       <Dialog open={open} onOpenChange={onOpenChange}>
-        <DialogContent className="sm:max-w-md p-6 rounded-2xl">
+        <DialogContent className="sm:max-w-sm p-2 rounded-2xl bg-transparent border-0 shadow-none">
           <DialogTitle className="sr-only">Account Details</DialogTitle>
-          <ModalContent />
+          <ModalContent showCloseButton={false} />
         </DialogContent>
       </Dialog>
     )
@@ -108,9 +121,9 @@ export function AccountModal({ open, onOpenChange, account, onDisconnect }: Acco
 
   return (
     <Drawer open={open} onOpenChange={onOpenChange}>
-      <DrawerContent className="p-6">
+      <DrawerContent className="p-4 border-0 [&_.bg-muted]:hidden">
         <DrawerTitle className="sr-only">Account Details</DrawerTitle>
-        <ModalContent />
+        <ModalContent showCloseButton={true} />
       </DrawerContent>
     </Drawer>
   )
