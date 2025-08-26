@@ -28,77 +28,60 @@ interface AccountModalProps {
   onDisconnect?: () => void
 }
 
-export function AccountModal({ open, onOpenChange, account, onDisconnect }: AccountModalProps) {
-  const [copied, setCopied] = React.useState(false)
-  const [showCreateForm, setShowCreateForm] = React.useState(false)
-  const [username, setUsername] = React.useState('')
-  const [avatarUrl, setAvatarUrl] = React.useState('')
-  const isDesktop = useMediaQuery("(min-width: 768px)")
-  
-  // Debounce username to avoid excessive API calls
-  const debouncedUsername = useDebounce(username, 500)
-  
-  const { name, avatarSrc, hasSubnames, isLoading: identityLoading, refetch: refetchIdentity } = usePreferredIdentity({
-    address: account?.address,
-    fallbackName: account?.displayName,
-    fallbackAvatar: account?.ensAvatar,
-  })
+interface ModalContentProps {
+  showCloseButton?: boolean
+  showCreateForm: boolean
+  setShowCreateForm: (show: boolean) => void
+  username: string
+  setUsername: (username: string) => void
+  avatarUrl: string
+  setAvatarUrl: (url: string) => void
+  account?: AccountModalProps['account']
+  name: string
+  avatarSrc?: string
+  hasSubnames: boolean
+  identityLoading: boolean
+  isAvailable?: boolean
+  availabilityLoading: boolean
+  debouncedUsername: string
+  isCreating: boolean
+  error: Error | null
+  isFormValid: boolean
+  copied: boolean
+  copyAddress: () => void
+  handleDisconnect: () => void
+  handleCreateSubname: () => void
+}
 
-  const { data: isAvailable, isLoading: availabilityLoading } = useSubnameAvailability(debouncedUsername)
-  const { createSubname, isCreating, error, isSuccess, reset } = useCreateSubname()
-
-  const copyAddress = async () => {
-    if (account?.address) {
-      await navigator.clipboard.writeText(account.address)
-      setCopied(true)
-      setTimeout(() => setCopied(false), 2000)
-    }
-  }
-
-  const { disconnect } = useDisconnect()
-  const handleDisconnect = () => {
-    disconnect()
-    onDisconnect?.()
-    onOpenChange(false)
-  }
-
-  // Reset form when modal closes
-  React.useEffect(() => {
-    if (!open) {
-      setShowCreateForm(false)
-      setUsername('')
-      setAvatarUrl('')
-      reset()
-    }
-  }, [open, reset])
-
-  // Handle successful creation
-  React.useEffect(() => {
-    if (isSuccess) {
-      setShowCreateForm(false)
-      setUsername('')
-      setAvatarUrl('')
-      // Refresh the identity data to show the new subname
-      refetchIdentity()
-    }
-  }, [isSuccess, refetchIdentity])
-
-  const handleCreateSubname = () => {
-    if (!account?.address || !username) return
-    
-    createSubname({
-      label: username,
-      address: account.address,
-      displayName: username, // Use username as display name
-      pfpUrl: avatarUrl || '', // Use provided avatar or empty string
-    })
-  }
-
-  const isFormValid = username.length > 0 && isAvailable === true
+// Extract ModalContent as a separate component to prevent re-mounting on re-renders
+const ModalContent = React.memo(({ 
+  showCloseButton = false, 
+  showCreateForm,
+  setShowCreateForm,
+  username,
+  setUsername,
+  avatarUrl,
+  setAvatarUrl,
+  account,
+  name,
+  avatarSrc,
+  hasSubnames,
+  identityLoading,
+  isAvailable,
+  availabilityLoading,
+  debouncedUsername,
+  isCreating,
+  error,
+  isFormValid,
+  copied,
+  copyAddress,
+  handleDisconnect,
+  handleCreateSubname
+}: ModalContentProps) => {
   const showAvailabilityIcon = debouncedUsername.length > 0 && !availabilityLoading
   const showLoadingIcon = debouncedUsername.length > 0 && availabilityLoading
 
-  const ModalContent = ({ showCloseButton = false }) => (
+  return (
     <div className="bg-gray-50 rounded-2xl p-6 relative">
       {showCloseButton && (
         <DrawerClose asChild>
@@ -259,13 +242,108 @@ export function AccountModal({ open, onOpenChange, account, onDisconnect }: Acco
       )}
     </div>
   )
+})
+
+ModalContent.displayName = 'ModalContent'
+
+export function AccountModal({ open, onOpenChange, account, onDisconnect }: AccountModalProps) {
+  const [copied, setCopied] = React.useState(false)
+  const [showCreateForm, setShowCreateForm] = React.useState(false)
+  const [username, setUsername] = React.useState('')
+  const [avatarUrl, setAvatarUrl] = React.useState('')
+  const isDesktop = useMediaQuery("(min-width: 768px)")
+  
+  // Debounce username to avoid excessive API calls
+  const debouncedUsername = useDebounce(username, 500)
+  
+  const { name, avatarSrc, hasSubnames, isLoading: identityLoading, refetch: refetchIdentity } = usePreferredIdentity({
+    address: account?.address,
+    fallbackName: account?.displayName,
+    fallbackAvatar: account?.ensAvatar,
+  })
+
+  const { data: isAvailable, isLoading: availabilityLoading } = useSubnameAvailability(debouncedUsername)
+  const { createSubname, isCreating, error, isSuccess, reset } = useCreateSubname()
+
+  const copyAddress = React.useCallback(async () => {
+    if (account?.address) {
+      await navigator.clipboard.writeText(account.address)
+      setCopied(true)
+      setTimeout(() => setCopied(false), 2000)
+    }
+  }, [account?.address])
+
+  const { disconnect } = useDisconnect()
+  const handleDisconnect = React.useCallback(() => {
+    disconnect()
+    onDisconnect?.()
+    onOpenChange(false)
+  }, [disconnect, onDisconnect, onOpenChange])
+
+  // Reset form when modal closes
+  React.useEffect(() => {
+    if (!open) {
+      setShowCreateForm(false)
+      setUsername('')
+      setAvatarUrl('')
+      reset()
+    }
+  }, [open, reset])
+
+  // Handle successful creation
+  React.useEffect(() => {
+    if (isSuccess) {
+      setShowCreateForm(false)
+      setUsername('')
+      setAvatarUrl('')
+      // Refresh the identity data to show the new subname
+      refetchIdentity()
+    }
+  }, [isSuccess, refetchIdentity])
+
+  const handleCreateSubname = React.useCallback(() => {
+    if (!account?.address || !username) return
+    
+    createSubname({
+      label: username,
+      address: account.address,
+      displayName: username, // Use username as display name
+      pfpUrl: avatarUrl || '', // Use provided avatar or empty string
+    })
+  }, [account?.address, username, avatarUrl, createSubname])
+
+  const isFormValid = username.length > 0 && isAvailable === true
+
 
   if (isDesktop) {
     return (
       <Dialog open={open} onOpenChange={onOpenChange}>
         <DialogContent className="sm:max-w-sm p-2 rounded-2xl bg-transparent border-0 shadow-none">
           <DialogTitle className="sr-only">Account Details</DialogTitle>
-          <ModalContent showCloseButton={false} />
+          <ModalContent 
+            showCloseButton={false}
+            showCreateForm={showCreateForm}
+            setShowCreateForm={setShowCreateForm}
+            username={username}
+            setUsername={setUsername}
+            avatarUrl={avatarUrl}
+            setAvatarUrl={setAvatarUrl}
+            account={account}
+            name={name}
+            avatarSrc={avatarSrc}
+            hasSubnames={hasSubnames}
+            identityLoading={identityLoading}
+            isAvailable={isAvailable}
+            availabilityLoading={availabilityLoading}
+            debouncedUsername={debouncedUsername}
+            isCreating={isCreating}
+            error={error}
+            isFormValid={isFormValid}
+            copied={copied}
+            copyAddress={copyAddress}
+            handleDisconnect={handleDisconnect}
+            handleCreateSubname={handleCreateSubname}
+          />
         </DialogContent>
       </Dialog>
     )
@@ -275,7 +353,30 @@ export function AccountModal({ open, onOpenChange, account, onDisconnect }: Acco
     <Drawer open={open} onOpenChange={onOpenChange}>
       <DrawerContent className="p-4 border-0">
         <DrawerTitle className="sr-only">Account Details</DrawerTitle>
-        <ModalContent showCloseButton={true} />
+        <ModalContent 
+          showCloseButton={true}
+          showCreateForm={showCreateForm}
+          setShowCreateForm={setShowCreateForm}
+          username={username}
+          setUsername={setUsername}
+          avatarUrl={avatarUrl}
+          setAvatarUrl={setAvatarUrl}
+          account={account}
+          name={name}
+          avatarSrc={avatarSrc}
+          hasSubnames={hasSubnames}
+          identityLoading={identityLoading}
+          isAvailable={isAvailable}
+          availabilityLoading={availabilityLoading}
+          debouncedUsername={debouncedUsername}
+          isCreating={isCreating}
+          error={error}
+          isFormValid={isFormValid}
+          copied={copied}
+          copyAddress={copyAddress}
+          handleDisconnect={handleDisconnect}
+          handleCreateSubname={handleCreateSubname}
+        />
       </DrawerContent>
     </Drawer>
   )
