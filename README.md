@@ -25,7 +25,7 @@ npm install
 Create a `.env.local` file in the root directory:
 
 ```env
-# Your ENS name (without .eth)
+# Your ENS name (eg. offchainsub.eth)
 NEXT_PUBLIC_ENS_NAME=yourname
 
 # Your Namespace API key (keep this secret!)
