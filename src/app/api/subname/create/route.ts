@@ -8,7 +8,7 @@ interface CreateSubnameRequest {
     label: string;
     address: string;
     displayName: string;
-    pfpUrl: string;
+    pfpUrl?: string;
 }
 const ENS_NAME = process.env.NEXT_PUBLIC_ENS_NAME!;
 
@@ -67,12 +67,11 @@ export async function POST(request: NextRequest) {
         }
 
         // Prepare text records and metadata from Farcaster data
-        const texts: { key: string; value: string }[] = [
-            { key: "avatar", value: body.pfpUrl },
-        ];
+        const texts: { key: string; value: string }[] = 
+            body?.pfpUrl ? [{ key: "avatar", value: body?.pfpUrl }] : [];
 
         const metadata: { key: string; value: string }[] = [
-            { key: "sender", value: normalizedAddress }, 
+            { key: "sender", value: normalizedAddress }
         ];
         
 

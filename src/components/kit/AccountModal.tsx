@@ -3,11 +3,11 @@
 import * as React from "react"
 import { useMediaQuery } from "@/hooks/use-media-query"
 import { useDisconnect } from "wagmi"
-import { Dialog, DialogContent, DialogTitle } from "./dialog"
-import { Drawer, DrawerContent, DrawerTitle, DrawerClose } from "./drawer"
-import { Button } from "./button"
-import { Input } from "./input"
-import { Avatar, AvatarFallback, AvatarImage } from "./avatar"
+import { Dialog, DialogContent, DialogTitle } from "../ui/dialog"
+import { Drawer, DrawerContent, DrawerTitle, DrawerClose } from "../ui/drawer"
+import { Button } from "../ui/button"
+import { Input } from "../ui/input"
+import { Avatar, AvatarFallback, AvatarImage } from "../ui/avatar"
 import { Copy, LogOut, XIcon, Plus, Check, AlertCircle, Loader2 } from "lucide-react"
 import { emojiAvatarForAddress } from "@/utils/avatar"
 import { usePreferredIdentity } from "@/hooks/use-subnames"
@@ -211,7 +211,7 @@ const ModalContent = React.memo(({
             {!hasSubnames && !identityLoading && (
               <Button
                 onClick={() => setShowCreateForm(true)}
-                className="w-full h-14 bg-blue-600 hover:bg-blue-700 text-white rounded-xl font-medium transition-all duration-200 flex items-center justify-center gap-2"
+                className="w-full h-10 bg-gray-600 hover:bg-gray-700 text-white rounded-xl font-medium transition-all duration-200 flex items-center justify-center gap-2"
               >
                 <Plus className="w-4 h-4" />
                 <span>Create Subname</span>

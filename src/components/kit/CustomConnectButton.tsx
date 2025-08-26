@@ -1,10 +1,10 @@
 "use client"
 
-import * as React from "react"
+import React, { useState } from "react"
 import { ConnectButton } from "@rainbow-me/rainbowkit"
 import { ChevronDown } from "lucide-react"
-import { Button } from "./button"
-import { Avatar, AvatarFallback, AvatarImage } from "./avatar"
+import { Button } from "../ui/button"
+import { Avatar, AvatarFallback, AvatarImage } from "../ui/avatar"
 import { emojiAvatarForAddress } from "@/utils/avatar"
 import { AccountModal } from "./AccountModal"
 import { usePreferredIdentity } from "@/hooks/use-subnames"
@@ -32,15 +32,15 @@ const AccountDisplay = ({
     <Button
       onClick={onOpenModal}
       variant="outline"
-      className="h-10 px-3 py-2 rounded-xl border border-border bg-background hover:scale-105 active:scale-95 transition-all duration-200 shadow-sm hover:shadow-md text-base flex items-center justify-between"
+      className="h-10 px-3 py-2 rounded-xl border border-border bg-background hover:scale-105 active:scale-95 transition-all duration-200 shadow-sm hover:shadow-md text-base flex items-center justify-between min-w-0 max-w-full"
     >
       {account.displayBalance && (
-        <span className="text-muted-foreground text-base mr-3">
+        <span className="text-muted-foreground text-base mr-3 hidden sm:inline">
           {account.displayBalance}
         </span>
       )}
-      <div className="flex items-center rounded-lg px-2 py-1 sm:bg-muted">
-        <Avatar className="w-6 h-6 mr-2">
+      <div className="flex items-center rounded-lg px-2 py-1 sm:bg-muted min-w-0 flex-1">
+        <Avatar className="w-6 h-6 mr-2 flex-shrink-0">
           <AvatarImage src={avatarSrc} alt={name} />
           <AvatarFallback 
             className="text-sm flex items-center justify-center"
@@ -51,15 +51,15 @@ const AccountDisplay = ({
             {account.address ? emojiAvatarForAddress(account.address).emoji : '?'}
           </AvatarFallback>
         </Avatar>
-        <span className="font-medium text-foreground text-base mr-2">{name}</span>
-        <ChevronDown className="w-4 h-4 text-muted-foreground" />
+        <span className="font-medium text-foreground text-base mr-2 truncate min-w-0 max-w-[120px] sm:max-w-[160px]" title={name}>{name}</span>
+        <ChevronDown className="w-4 h-4 text-muted-foreground flex-shrink-0" />
       </div>
     </Button>
   )
 }
 
 export const CustomConnectButton = () => {
-  const [accountModalOpen, setAccountModalOpen] = React.useState(false)
+  const [accountModalOpen, setAccountModalOpen] = useState(false)
 
   return (
     <ConnectButton.Custom>
@@ -119,12 +119,12 @@ export const CustomConnectButton = () => {
         }
 
         return (
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-1 sm:gap-2">
             {/* Network Selector */}
             <Button
               onClick={openChainModal}
               variant="outline"
-              className="h-10 px-3 py-2 rounded-xl border border-border bg-background hover:bg-accent transition-all duration-200 shadow-sm hover:shadow-md text-base"
+              className="h-10 px-2 sm:px-3 py-2 rounded-xl border border-border bg-background hover:bg-accent transition-all duration-200 shadow-sm hover:shadow-md text-base flex-shrink-0"
             >
               {chain.hasIcon && (
                 <div
@@ -142,8 +142,8 @@ export const CustomConnectButton = () => {
                   )}
                 </div>
               )}
-              <span className="font-medium text-foreground text-base hidden sm:inline">{chain.name}</span>
-              <ChevronDown className="w-4 h-4 text-muted-foreground ml-1" />
+              <span className="font-medium text-foreground text-base hidden sm:inline truncate max-w-[100px]" title={chain.name}>{chain.name}</span>
+              <ChevronDown className="w-4 h-4 text-muted-foreground ml-1 flex-shrink-0" />
             </Button>
 
             {/* Combined Account & Balance Display */}
