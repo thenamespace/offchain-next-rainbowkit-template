@@ -22,10 +22,12 @@ interface SubnamesResponse {
 }
 
 export function useSubnames(address: string | undefined) {
+  const normalizedAddress = address?.toLowerCase().trim()
+  
   return useQuery({
-    queryKey: ['subnames', address],
+    queryKey: ['subnames', normalizedAddress],
     queryFn: async (): Promise<SubnamesResponse | null> => {
-      if (!address) {
+      if (!normalizedAddress) {
         return null
       }
 
@@ -34,28 +36,29 @@ export function useSubnames(address: string | undefined) {
           owner: string
           parentName?: string
         } = {
-          owner: address,
+          owner: normalizedAddress,
         }
 
         if (process.env.NEXT_PUBLIC_ENS_NAME) {
           requestParams.parentName = process.env.NEXT_PUBLIC_ENS_NAME
         }
-
+console.log("requestParams in useSubnames", requestParams);
         const response = await clientSideClient.getFilteredSubnames(requestParams)
+        console.log("response in useSubnames", response);
         return response as SubnamesResponse
       } catch (error) {
         console.error('Error fetching subnames:', error)
         return null
       }
     },
-    enabled: !!address,
-    staleTime: 5 * 60 * 1000, // 5 minutes
-    gcTime: 10 * 60 * 1000, // 10 minutes (formerly cacheTime)
+    enabled: !!normalizedAddress,
+    staleTime: 1000, // 1 second - much shorter for fresher data
+    gcTime: 2 * 60 * 1000, // 2 minutes
   })
 }
 
 export function useFirstSubname(address: string | undefined) {
-  const { data: subnamesData, isLoading, error } = useSubnames(address)
+  const { data: subnamesData, isLoading, error, refetch } = useSubnames(address)
   
   const firstSubname = subnamesData?.items?.[0] || null
   
@@ -63,7 +66,8 @@ export function useFirstSubname(address: string | undefined) {
     subname: firstSubname,
     isLoading,
     error,
-    hasSubnames: (subnamesData?.totalItems || 0) > 0
+    hasSubnames: (subnamesData?.totalItems || 0) > 0,
+    refetch
   }
 }
 
@@ -73,7 +77,7 @@ export function usePreferredIdentity(args: {
   fallbackAvatar?: string
 }) {
   const { address, fallbackName, fallbackAvatar } = args
-  const { subname, isLoading, hasSubnames } = useFirstSubname(address)
+  const { subname, isLoading, hasSubnames, refetch } = useFirstSubname(address)
 
   // Helper to check if fallbackName is just a truncated address (like "0x92…5a3e")
   const isTruncatedAddress = (name: string) => {
@@ -95,9 +99,19 @@ export function usePreferredIdentity(args: {
     // 3. Final fallback to truncated address
     return address ? `${address.slice(0, 6)}...${address.slice(-4)}` : ''
   }
+  
+  // Only use avatar if it's a valid URL (not empty string or invalid)
+  const getAvatarSrc = () => {
+    const avatar = fallbackAvatar || subname?.texts?.avatar
+    // Return undefined if avatar is empty, null, or not a valid URL-like string
+    if (!avatar || avatar.trim() === '' || (!avatar.startsWith('http') && !avatar.startsWith('data:'))) {
+      return undefined
+    }
+    return avatar
+  }
 
   const name = getName()
-  const avatarSrc = fallbackAvatar || subname?.texts?.avatar || undefined
+  const avatarSrc = getAvatarSrc()
 
   return {
     name,
@@ -105,5 +119,6 @@ export function usePreferredIdentity(args: {
     isLoading,
     hasSubnames,
     subname,
+    refetch,
   }
 }

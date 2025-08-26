@@ -10,7 +10,7 @@ interface CreateSubnameRequest {
     displayName: string;
     pfpUrl: string;
 }
-const ENS_NAME = process.env.ENS_NAME!;
+const ENS_NAME = process.env.NEXT_PUBLIC_ENS_NAME!;
 
 export async function POST(request: NextRequest) {
     try {
@@ -35,7 +35,7 @@ export async function POST(request: NextRequest) {
 
         // Check if the exact subname already exists using direct availability check
         try {
-            const isAvailable = await client.isSubnameAvailable(fullSubname);
+            const {isAvailable} = await client.isSubnameAvailable(fullSubname);
             if (!isAvailable) {
                 return NextResponse.json({
                     error: 'Subname with this label already exists',
@@ -55,7 +55,7 @@ export async function POST(request: NextRequest) {
             parentName: ENS_NAME,
             owner: normalizedAddress
         });
-
+        console.log("existingAddressCheck", existingAddressCheck);
         if (existingAddressCheck?.items && existingAddressCheck.items.length > 0) {
             const existingSubname = existingAddressCheck.items[0];
             if (existingSubname?.fullName) {
@@ -69,7 +69,6 @@ export async function POST(request: NextRequest) {
         // Prepare text records and metadata from Farcaster data
         const texts: { key: string; value: string }[] = [
             { key: "avatar", value: body.pfpUrl },
-            { key: "name", value: body.displayName },
         ];
 
         const metadata: { key: string; value: string }[] = [
@@ -82,11 +81,12 @@ export async function POST(request: NextRequest) {
         const result = await client.createSubname({
             label: finalLabel,
             parentName: ENS_NAME,
-            addresses: [{ chain: ChainName.Base, value: normalizedAddress } , { chain: ChainName.Ethereum, value: normalizedAddress }],
+            addresses: [{ chain: ChainName.Ethereum, value: normalizedAddress }],
             texts: texts,
             metadata: metadata,
             owner: normalizedAddress
         });
+        console.log(result);
         return NextResponse.json({
             success: true,
             data: result,
