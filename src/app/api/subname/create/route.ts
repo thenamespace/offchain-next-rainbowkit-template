@@ -23,7 +23,8 @@ export async function POST(request: NextRequest) {
             }, { status: 400 });
         }
         const normalizedAddress = body.address.toLowerCase().trim();
-        const finalLabel = normalize(body.label);
+        // const finalLabel = normalize(body.label);
+        const finalLabel = body.label.toLowerCase();
         const fullSubname = `${finalLabel}.${ENS_NAME}`;
 
         // Prevent creating subnames for the zero address
