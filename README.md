@@ -1,6 +1,11 @@
-# Namespace Offchain Subnames + RainbowKit Starter Kit
+# ENS Offchain Subnames + RainbowKit Starter Kit
 
 A Next.js starter kit demonstrating the integration of [Namespace Offchain Manager SDK](https://docs.namespace.ninja/developer-guide/sdks/offchain-manager) with [RainbowKit](https://rainbowkit.com) for creating and managing Offchain ENS subnames.
+
+### Features
+
+- Rainbow Kit UI with Offchain subname creation / fetch logic.
+- You get reverse resolution for address for offchain subnames. [0x23...] -> happy.offchainsub.eth
 
 **🔗 Repository:** [https://github.com/thenamespace/offchain-next-rainbowkit-template](https://github.com/thenamespace/offchain-next-rainbowkit-template)
 

@@ -141,12 +141,12 @@ export default function Home() {
       {/* Footer */}
       <footer className="border-t bg-muted/50">
         <div className="container mx-auto px-4 py-6 flex flex-col sm:flex-row justify-between items-center text-sm text-muted-foreground">
-          <div>Built with Namespace SDK • Open source under MIT</div>
+          <div>Made with ❤️ by Namespace • Open source under MIT</div>
           <div className="flex gap-4 mt-2 sm:mt-0">
             <Link href="https://docs.namespace.ninja" target="_blank" className="hover:text-foreground">
               Docs
             </Link>
-            <Link href="https://github.com/namespace-labs" target="_blank" className="hover:text-foreground">
+            <Link href="https://github.com/thenamespace/offchain-next-rainbowkit-template" target="_blank" className="hover:text-foreground">
               GitHub
             </Link>
             <Link href="https://t.me/+5FAwyiKOTeswNTIy" target="_blank" className="hover:text-foreground">
