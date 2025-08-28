@@ -46,7 +46,7 @@ export default function Home() {
                 </div>
               </Link>
               
-              <Link href="https://github.com/namespace-labs/starter-kit" target="_blank" className="group">
+              <Link href="https://github.com/thenamespace/offchain-next-rainbowkit-template" target="_blank" className="group">
                 <div className="bg-card border rounded-lg p-6 h-full flex flex-col justify-between hover:border-foreground/20 transition-colors">
                   <h3 className="font-semibold mb-2 group-hover:text-foreground">GitHub Repo</h3>
                   <p className="text-sm text-muted-foreground">View source code and contribute</p>
@@ -62,11 +62,6 @@ export default function Home() {
             </div>
           </div>
         </section>
-
-
-
-
-
         {/* What's Included */}
         <section className="mb-12 lg:mb-16">
           <div className="max-w-4xl mx-auto">
