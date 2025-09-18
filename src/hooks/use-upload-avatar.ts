@@ -10,7 +10,7 @@ type UploadParams = {
   scope?: 'avatar' | 'header' | 'avatar+header';
 };
 
-// Direct calls to avatar service (requires CORS to be configured on server)
+// Direct calls to avatar service
 const baseUrl = 'https://metadata.namespace.ninja';
 
 async function getNonce(address: string, scope: UploadParams['scope'] = 'avatar+header') {
