@@ -8,11 +8,12 @@ import { Drawer, DrawerContent, DrawerTitle, DrawerClose } from "../ui/drawer"
 import { Button } from "../ui/button"
 import { Input } from "../ui/input"
 import { Avatar, AvatarFallback, AvatarImage } from "../ui/avatar"
-import { Copy, LogOut, XIcon, Plus, Check, AlertCircle, Loader2 } from "lucide-react"
+import { Copy, LogOut, XIcon, Plus, Check, AlertCircle, Loader2, Camera } from "lucide-react"
 import { emojiAvatarForAddress } from "@/utils/avatar"
 import { usePreferredIdentity } from "@/hooks/use-subnames"
 import { useSubnameAvailability, useCreateSubname } from "@/hooks/use-subname-creation"
 import { useDebounce } from "@/hooks/use-debounce"
+import { AvatarUpload } from "./AvatarUpload"
 
 interface AccountModalProps {
   open: boolean
@@ -32,6 +33,8 @@ interface ModalContentProps {
   showCloseButton?: boolean
   showCreateForm: boolean
   setShowCreateForm: (show: boolean) => void
+  showAvatarUpload: boolean
+  setShowAvatarUpload: (show: boolean) => void
   username: string
   setUsername: (username: string) => void
   avatarUrl: string
@@ -51,6 +54,8 @@ interface ModalContentProps {
   copyAddress: () => void
   handleDisconnect: () => void
   handleCreateSubname: () => void
+  subname?: string
+  refetchIdentity: () => void
 }
 
 // Extract ModalContent as a separate component to prevent re-mounting on re-renders
@@ -58,6 +63,8 @@ const ModalContent = React.memo(({
   showCloseButton = false, 
   showCreateForm,
   setShowCreateForm,
+  showAvatarUpload,
+  setShowAvatarUpload,
   username,
   setUsername,
   avatarUrl,
@@ -76,7 +83,9 @@ const ModalContent = React.memo(({
   copied,
   copyAddress,
   handleDisconnect,
-  handleCreateSubname
+  handleCreateSubname,
+  subname,
+  refetchIdentity
 }: ModalContentProps) => {
   const showAvailabilityIcon = debouncedUsername.length > 0 && !availabilityLoading
   const showLoadingIcon = debouncedUsername.length > 0 && availabilityLoading
@@ -91,7 +100,40 @@ const ModalContent = React.memo(({
         </DrawerClose>
       )}
       
-      {showCreateForm ? (
+      {showAvatarUpload ? (
+        /* Avatar Upload Form */
+        <div className="space-y-6">
+          <div className="text-center">
+            <h3 className="text-2xl font-bold text-gray-900 mb-2">Upload Avatar</h3>
+            <p className="text-sm text-gray-600">Upload a custom avatar for your subname</p>
+          </div>
+
+          <AvatarUpload
+            subname={subname || ''}
+            network="mainnet"
+            address={account?.address}
+            currentAvatarSrc={avatarSrc}
+            onAvatarUploaded={(_avatarUrl) => {
+              // Refetch identity to get updated avatar
+              refetchIdentity()
+              setShowAvatarUpload(false)
+            }}
+            onAvatarDeleted={() => {
+              // Refetch identity to reflect avatar deletion
+              refetchIdentity()
+              setShowAvatarUpload(false)
+            }}
+          />
+
+          <Button
+            onClick={() => setShowAvatarUpload(false)}
+            variant="outline"
+            className="w-full"
+          >
+            Back to Account
+          </Button>
+        </div>
+      ) : showCreateForm ? (
         /* Subname Creation Form */
         <div className="space-y-6">
           <div className="text-center">
@@ -218,6 +260,16 @@ const ModalContent = React.memo(({
               </Button>
             )}
             
+            {hasSubnames && subname && (
+              <Button
+                onClick={() => setShowAvatarUpload(true)}
+                className="w-full h-10 bg-blue-600 hover:bg-blue-700 text-white rounded-xl font-medium transition-all duration-200 flex items-center justify-center gap-2"
+              >
+                <Camera className="w-4 h-4" />
+                <span>Upload Avatar</span>
+              </Button>
+            )}
+            
             <div className="flex gap-3">
               <Button
                 onClick={copyAddress}
@@ -249,6 +301,7 @@ ModalContent.displayName = 'ModalContent'
 export function AccountModal({ open, onOpenChange, account, onDisconnect }: AccountModalProps) {
   const [copied, setCopied] = React.useState(false)
   const [showCreateForm, setShowCreateForm] = React.useState(false)
+  const [showAvatarUpload, setShowAvatarUpload] = React.useState(false)
   const [username, setUsername] = React.useState('')
   const [avatarUrl, setAvatarUrl] = React.useState('')
   const isDesktop = useMediaQuery("(min-width: 768px)")
@@ -256,7 +309,7 @@ export function AccountModal({ open, onOpenChange, account, onDisconnect }: Acco
   // Debounce username to avoid excessive API calls
   const debouncedUsername = useDebounce(username, 500)
   
-  const { name, avatarSrc, hasSubnames, isLoading: identityLoading, refetch: refetchIdentity } = usePreferredIdentity({
+  const { name, avatarSrc, hasSubnames, isLoading: identityLoading, subname, refetch: refetchIdentity } = usePreferredIdentity({
     address: account?.address,
     fallbackName: account?.displayName,
     fallbackAvatar: account?.ensAvatar,
@@ -284,6 +337,7 @@ export function AccountModal({ open, onOpenChange, account, onDisconnect }: Acco
   React.useEffect(() => {
     if (!open) {
       setShowCreateForm(false)
+      setShowAvatarUpload(false)
       setUsername('')
       setAvatarUrl('')
       reset()
@@ -324,6 +378,8 @@ export function AccountModal({ open, onOpenChange, account, onDisconnect }: Acco
             showCloseButton={false}
             showCreateForm={showCreateForm}
             setShowCreateForm={setShowCreateForm}
+            showAvatarUpload={showAvatarUpload}
+            setShowAvatarUpload={setShowAvatarUpload}
             username={username}
             setUsername={setUsername}
             avatarUrl={avatarUrl}
@@ -343,6 +399,8 @@ export function AccountModal({ open, onOpenChange, account, onDisconnect }: Acco
             copyAddress={copyAddress}
             handleDisconnect={handleDisconnect}
             handleCreateSubname={handleCreateSubname}
+            subname={subname?.fullName}
+            refetchIdentity={refetchIdentity}
           />
         </DialogContent>
       </Dialog>
@@ -357,6 +415,8 @@ export function AccountModal({ open, onOpenChange, account, onDisconnect }: Acco
           showCloseButton={true}
           showCreateForm={showCreateForm}
           setShowCreateForm={setShowCreateForm}
+          showAvatarUpload={showAvatarUpload}
+          setShowAvatarUpload={setShowAvatarUpload}
           username={username}
           setUsername={setUsername}
           avatarUrl={avatarUrl}
@@ -376,6 +436,8 @@ export function AccountModal({ open, onOpenChange, account, onDisconnect }: Acco
           copyAddress={copyAddress}
           handleDisconnect={handleDisconnect}
           handleCreateSubname={handleCreateSubname}
+          subname={subname?.fullName}
+          refetchIdentity={refetchIdentity}
         />
       </DrawerContent>
     </Drawer>
