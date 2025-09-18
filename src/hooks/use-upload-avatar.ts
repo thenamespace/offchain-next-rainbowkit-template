@@ -57,10 +57,10 @@ function buildSiweMessage(params: {
   const { address, chainId, nonce, statement } = params;
   
   const msg = new SiweMessage({
-    domain: 'localhost:3001',
+    domain: 'offchain-next-rainbowkit-template.vercel.app',
     address: address, 
     statement:'Sign in to Avatar Service (local test)',
-    uri: 'http://localhost:3001',
+    uri: 'https://offchain-next-rainbowkit-template.vercel.app',
     version: '1',
     chainId,
     nonce,
